@@ -35,21 +35,29 @@ jobs:
         Write-Host "PATH UPDATED."
 
     - name: Install Dependencies & Restart PM2 Service
-      # Kita menjalankan pm2 yang sudah diinstal secara global.
+      # Jalankan ini di terminal PowerShell (di Runner)
       run: |
-        npm install -g pm2 # Pastikan PM2 ada secara global
-        
-        # Pindah ke folder proyek bot WA Anda
+        # 1. Masuk ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # HAPUS PROSES PM2 LAMA (Menggunakan sintaks IF/ELSE Windows)
-        # Jika 'pm2 delete' gagal (exit code 1), abaikan errornya dan lanjutkan.
-        if (pm2 delete bot-absen) { "Bot lama dihapus" } else { "Bot tidak ditemukan (normal)" }
+        # 2. Instal PM2 LOKAL (bukan global) di folder proyek ini.
+        # Ini akan memastikan pm2.cmd ada di ./node_modules/.bin/pm2.cmd
+        npm install pm2
         
-        # START bot WA Anda (PM2_HOME sudah diatur dengan benar)
-        pm2 start index.js --name "bot-absen" --force
+        # 3. Definisikan alias PM2 sebagai cara tercepat. 
+        # Kita gunakan Node.js untuk menemukan path PM2 yang benar.
+        $PM2 = ".\node_modules\.bin\pm2.cmd"
+
+        # 4. HAPUS PROSES PM2 LAMA (Menggunakan sintaks IF/ELSE Windows)
+        # Kita harus menggunakan &($PM2) untuk menjalankan file .cmd di PowerShell
+        if (& $PM2 delete bot-absen) { "Bot lama dihapus" } else { "Bot tidak ditemukan (normal)" }
         
-        pm2 save
+        # 5. START bot WA Anda
+        & $PM2 start index.js --name "bot-absen" --force
+        
+        # 6. Simpan konfigurasi
+        & $PM2 save
+      shell: powershell
 
     - name: Ambil Log Verifikasi
       # Ambil 20 baris log terakhir dan kirim ke output GitHub Actions
