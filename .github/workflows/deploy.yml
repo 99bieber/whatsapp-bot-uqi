@@ -10,65 +10,57 @@ jobs:
     runs-on: self-hosted
 
     steps:
-    # 1. Ambil kode dari repository
+    # 1️⃣ Ambil kode dari repository
     - name: Checkout Kode
       uses: actions/checkout@v4
 
-    # 2. Pindah ke folder proyek dan install dependencies
+    # 2️⃣ Masuk ke folder proyek dan install dependencies
     - name: Install Dependencies
-      shell: pwsh
+      shell: cmd
       run: |
-        Write-Host "📁 Masuk ke folder proyek"
-        cd D:\Pengkodingan\whatsapp-bot-uqi
+        echo 📁 Masuk ke folder proyek
+        cd /d D:\Pengkodingan\whatsapp-bot-uqi
 
-        Write-Host "📦 Install dependencies..."
+        echo 📦 Install dependencies...
         npm install
 
-    # 3. Pastikan PM2 terinstal (atau install jika belum ada)
+    # 3️⃣ Pastikan PM2 Terinstal (install jika belum ada)
     - name: Pastikan PM2 Terinstal
-      shell: pwsh
+      shell: cmd
       run: |
-        Write-Host "🔍 Mengecek apakah PM2 sudah terinstal..."
-        if (-not (Get-Command pm2 -ErrorAction SilentlyContinue)) {
-          Write-Host "⚙️ PM2 belum terinstal, menginstal global..."
-          npm install -g pm2
-        } else {
-          Write-Host "✅ PM2 sudah terinstal"
-        }
+        echo 🔍 Mengecek apakah PM2 sudah terinstal...
+        where pm2 || npm install -g pm2
 
-        Write-Host "📂 Menambahkan PM2 ke PATH..."
-        $env:PATH += ";C:\Users\runneradmin\AppData\Roaming\npm"
+        REM Tambahkan PATH npm global (user Administrator)
+        setx PATH "%PATH%;C:\Users\Administrator\AppData\Roaming\npm"
+
+        echo ✅ Cek versi PM2
         pm2 -v
 
-    # 4. Restart atau jalankan bot via PM2
+    # 4️⃣ Restart atau jalankan bot dengan PM2
     - name: Restart Bot via PM2
-      shell: pwsh
+      shell: cmd
       run: |
-        Write-Host "🚀 Menjalankan atau me-restart bot..."
-        cd D:\Pengkodingan\whatsapp-bot-uqi
+        cd /d D:\Pengkodingan\whatsapp-bot-uqi
 
-        # Pastikan PM2 dikenali di PATH
-        $env:PATH += ";C:\Users\runneradmin\AppData\Roaming\npm"
+        REM Pastikan PM2 ada di PATH
+        set PATH=%PATH%;C:\Users\Administrator\AppData\Roaming\npm
 
-        try {
-          pm2 describe bot-absen > $null 2>&1
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "🔄 Bot ditemukan, me-restart..."
-            pm2 restart bot-absen
-          } else {
-            Write-Host "🆕 Bot belum berjalan, menjalankan baru..."
-            pm2 start index.js --name "bot-absen"
-          }
-        } catch {
-          Write-Host "⚠️ Error mendeteksi bot, menjalankan baru..."
+        echo 🚀 Menjalankan atau me-restart bot...
+        pm2 describe bot-absen >nul 2>&1
+        if %errorlevel%==0 (
+          echo 🔄 Bot ditemukan, me-restart...
+          pm2 restart bot-absen
+        ) else (
+          echo 🆕 Bot belum berjalan, menjalankan baru...
           pm2 start index.js --name "bot-absen"
-        }
+        )
 
         pm2 save
 
-    # 5. Verifikasi status PM2
+    # 5️⃣ Cek status semua proses PM2
     - name: Cek Status PM2
-      shell: pwsh
+      shell: cmd
       run: |
-        $env:PATH += ";C:\Users\runneradmin\AppData\Roaming\npm"
+        set PATH=%PATH%;C:\Users\Administrator\AppData\Roaming\npm
         pm2 list
