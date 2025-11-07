@@ -10,40 +10,42 @@ jobs:
   deploy:
     runs-on: self-hosted
     
-    # =========================================================
-    # PERBAIKAN PATH DAN IZIN PM2 KRITIS UNTUK WINDOWS NETWORK SERVICE
-    # =========================================================
-    env:
-        # PM2_HOME harus diatur ke lokasi yang 100% bisa diakses oleh Network Service
-        # Kita gunakan folder runner itu sendiri.
-        PM2_HOME: D:\Pengkodingan\actions-runner\.pm2 
+    # ⚠️ HAPUS SEMUA DEFINISI 'env: PM2_HOME'
+    # env: PM2_HOME: D:\Pengkodingan\actions-runner\.pm2 
         
     steps:
     - name: Checkout Kode Bersih
       uses: actions/checkout@v4
 
-    - name: Install Dependencies & Restart PM2 Service
-      # Kita menjalankan semua perintah sebagai PowerShell
-      shell: powershell
+    - name: Set Environment Path (Minimalis)
+      shell: powershell 
       run: |
-        # 1. Tambahkan Path NPM global ke PATH (agar Node.js/npm ditemukan)
+        # Hanya tambahkan Path NPM global ke PATH (agar npm ditemukan)
         $npmGlobalPath = "$env:APPDATA\npm"
         $env:Path = "$npmGlobalPath;$env:Path"
         
-        # 2. Masuk ke folder proyek bot WA Anda
+        Write-Host "PATH UPDATED."
+
+    - name: Install Dependencies & Restart PM2 Service
+      shell: powershell
+      run: |
+        # 1. Masuk ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # 3. Instal PM2 LOKAL. Ini andalan kita.
+        # 2. Instal PM2 LOKAL. 
         npm install pm2
         
-        # 4. Definisikan alias PM2 dari instalasi lokal
+        # 3. Definisikan alias PM2
         $PM2 = ".\node_modules\.bin\pm2.cmd"
         
-        # 5. HAPUS PROSES PM2 LAMA (Menggunakan sintaks IF/ELSE Windows)
-        if (& $PM2 delete bot-absen) { "Bot lama dihapus" } else { "Bot tidak ditemukan (normal)" }
+        # 4. HAPUS PM2 DAEMON LAMA DARI LOKASI DEFAULT (Ini penting)
+        # Service Windows seringkali meninggalkan daemon PM2 di lokasi non-standar yang mengunci socket.
+        # Kita matikan PM2 dulu, lalu hapus.
+        pm2 kill
         
-        # 6. START bot WA Anda
-        & $PM2 start index.js --name "bot-absen" --force
+        # 5. START bot WA Anda
+        # Kita tidak menggunakan & $PM2, kita andalkan PATH NPM yang sudah di-set
+        pm2 start index.js --name "bot-absen" --force
         
-        # 7. Simpan konfigurasi
-        & $PM2 save
+        # 6. Simpan konfigurasi
+        pm2 save
