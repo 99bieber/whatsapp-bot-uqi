@@ -10,9 +10,6 @@ jobs:
   deploy:
     runs-on: self-hosted
     
-    # ⚠️ HAPUS SEMUA DEFINISI 'env: PM2_HOME'
-    # env: PM2_HOME: D:\Pengkodingan\actions-runner\.pm2 
-        
     steps:
     - name: Checkout Kode Bersih
       uses: actions/checkout@v4
@@ -20,10 +17,9 @@ jobs:
     - name: Set Environment Path (Minimalis)
       shell: powershell 
       run: |
-        # Hanya tambahkan Path NPM global ke PATH (agar npm ditemukan)
+        # Tambahkan Path NPM global ke PATH (agar npm ditemukan oleh Runner)
         $npmGlobalPath = "$env:APPDATA\npm"
         $env:Path = "$npmGlobalPath;$env:Path"
-        
         Write-Host "PATH UPDATED."
 
     - name: Install Dependencies & Restart PM2 Service
@@ -32,20 +28,12 @@ jobs:
         # 1. Masuk ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # 2. Instal PM2 LOKAL. 
-        npm install pm2
+        # 2. Instal semua dependensi proyek (termasuk PM2 lokal untuk keandalan)
+        npm install
         
-        # 3. Definisikan alias PM2
+        # 3. Definisikan alias PM2 dari instalasi lokal
         $PM2 = ".\node_modules\.bin\pm2.cmd"
-        
-        # 4. HAPUS PM2 DAEMON LAMA DARI LOKASI DEFAULT (Ini penting)
-        # Service Windows seringkali meninggalkan daemon PM2 di lokasi non-standar yang mengunci socket.
-        # Kita matikan PM2 dulu, lalu hapus.
-        pm2 kill
-        
-        # 5. START bot WA Anda
-        # Kita tidak menggunakan & $PM2, kita andalkan PATH NPM yang sudah di-set
-        pm2 start index.js --name "bot-absen" --force
+        pm2 restart bot-absen
         
         # 6. Simpan konfigurasi
-        pm2 save
+        & pm2 save
