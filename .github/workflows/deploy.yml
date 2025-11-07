@@ -35,18 +35,18 @@ jobs:
         Write-Host "PATH UPDATED."
 
     - name: Install Dependencies & Restart PM2 Service
-      # Jalankan ini dari folder bot Anda
+      # Kita menjalankan pm2 yang sudah diinstal secara global.
       run: |
         npm install -g pm2 # Pastikan PM2 ada secara global
         
         # Pindah ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # HAPUS PROSES PM2 LAMA sebelum start baru
-        # '|| true' mencegah workflow crash jika bot-absen belum ada
-        pm2 delete bot-absen || true
+        # HAPUS PROSES PM2 LAMA (Menggunakan sintaks IF/ELSE Windows)
+        # Jika 'pm2 delete' gagal (exit code 1), abaikan errornya dan lanjutkan.
+        if (pm2 delete bot-absen) { "Bot lama dihapus" } else { "Bot tidak ditemukan (normal)" }
         
-        # START bot WA Anda (PM2_HOME sekarang sudah diatur dan izinnya ada)
+        # START bot WA Anda (PM2_HOME sudah diatur dengan benar)
         pm2 start index.js --name "bot-absen" --force
         
         pm2 save
