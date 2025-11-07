@@ -4,41 +4,48 @@ name: Auto Deploy & Restart Bot
 on:
   push:
     branches:
-      - main # Hanya jalankan ketika ada push ke branch 'main'
+      - main
 
 jobs:
   deploy:
-    # Set runner untuk dijalankan di laptop Windows Anda
     runs-on: self-hosted
 
     steps:
     - name: Checkout Kode Bersih
       uses: actions/checkout@v4
-      # Kode akan ditarik ke direktori kerja runner.
 
-    - name: Set Lokasi Node.js (PENTING untuk Windows)
-      # Memastikan runner tahu lokasi Node.js (sejak Anda menginstal Node.js terbaru).
+    # =========================================================
+    # ⚠️ PERBAIKAN PATH KRITIS UNTUK WINDOWS
+    # =========================================================
+    - name: Set Environment Path untuk Node dan PM2
+      # Ini akan menambahkan folder instalasi global npm ke variabel PATH.
+      # Biasanya terletak di: C:\Users\<username>\AppData\Roaming\npm\
+      # Runner Anda berjalan sebagai NETWORK SERVICE, jadi Path-nya berbeda.
+      # Kita pakai path yang lebih universal untuk runner Windows.
       run: |
-        $nodePath = "C:\Program Files\nodejs"
-        $env:Path = "$nodePath;$env:Path"
-        node -v
+        $npmGlobalPath = "$env:APPDATA\npm"
+        $env:Path = "$npmGlobalPath;$env:Path"
+        
+        Write-Host "PATH UPDATED TO: $env:Path"
+        npm -v
+        pm2 -v
+    # =========================================================
 
     - name: Install Dependencies
       run: npm install
 
     - name: Restart PM2 Service dan Ambil Log
-      # Kita menjalankan pm2 yang sudah diinstal secara global.
+      # Kita menjalankan pm2 yang sudah diinstal secara global (sekarang Path-nya sudah benar)
       run: |
-        npm install -g pm2 # Pastikan pm2 ada secara global
+        npm install -g pm2 # Memastikan PM2 ada (jika terhapus)
         
-        # Pindah ke folder proyek agar PM2 tahu mana file index.js yang harus di-restart
-        # Catatan: Ubah path ini jika folder bot Anda BUKAN di D:\Pengkodingan\whatsapp-bot-uqi
+        # Pindah ke folder proyek
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
         # Restart bot WA Anda
         pm2 restart bot-absen
         
-        # Ambil 20 baris log terakhir dan kirim ke output GitHub Actions
+        # Ambil log
         $LogOutput = pm2 logs bot-absen --lines 20 --nostream 2>&1
         
         Write-Host "::group::PM2 Logs (20 Lines - bot-absen)"
