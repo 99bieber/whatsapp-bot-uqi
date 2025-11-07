@@ -1,8 +1,9 @@
 // index.js
-import "dotenv/config"; // <-- PENTING: Memuat file .env Anda SEBELUM hal lain
-import makeWASocket, { useMultiFileAuthState } from "@whiskeysockets/baileys";
-import fs from "fs";
-import cron from "node-cron";
+import 'dotenv/config'
+import makeWASocket, { useMultiFileAuthState } from '@whiskeysockets/baileys'
+import fs from 'fs'
+import cron from 'node-cron'
+import qrcode from 'qrcode-terminal'
 import {
   DATA_DIR,
   RESET_STATE_FILE,
