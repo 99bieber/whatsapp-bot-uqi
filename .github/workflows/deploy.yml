@@ -4,7 +4,7 @@ name: Auto Deploy & Restart Bot
 on:
   push:
     branches:
-      - main
+      - main # Hanya jalankan ketika ada push ke branch 'main'
 
 jobs:
   deploy:
@@ -15,41 +15,50 @@ jobs:
       uses: actions/checkout@v4
 
     # =========================================================
-    # ⚠️ PERBAIKAN PATH KRITIS UNTUK WINDOWS
+    # PERBAIKAN PATH DAN IZIN PM2 KRITIS UNTUK WINDOWS NETWORK SERVICE
     # =========================================================
-    - name: Set Environment Path untuk Node dan PM2
-      # Ini akan menambahkan folder instalasi global npm ke variabel PATH.
-      # Biasanya terletak di: C:\Users\<username>\AppData\Roaming\npm\
-      # Runner Anda berjalan sebagai NETWORK SERVICE, jadi Path-nya berbeda.
-      # Kita pakai path yang lebih universal untuk runner Windows.
+    - name: Set Environment Path dan Home PM2
+      # Pastikan Runner tahu di mana PM2 dan Node berada, dan di mana harus menyimpan file PM2.
       run: |
+        # Lokasi folder runner yang sebenarnya
+        $RunnerFolder = "D:\Pengkodingan\actions-runner"
+        
+        # 1. Tentukan folder home PM2 berada di dalam folder runner (.pm2)
+        # Ini memberikan izin baca/tulis yang diperlukan oleh NETWORK SERVICE
+        $env:PM2_HOME = "$RunnerFolder\.pm2" 
+        
+        # 2. Tambahkan Path NPM global (tempat PM2 diinstal secara global) ke PATH
         $npmGlobalPath = "$env:APPDATA\npm"
         $env:Path = "$npmGlobalPath;$env:Path"
         
-        Write-Host "PATH UPDATED TO: $env:Path"
-        npm -v
-        pm2 -v
-    # =========================================================
+        Write-Host "PM2_HOME set to: $env:PM2_HOME"
+        Write-Host "PATH UPDATED."
 
-    - name: Install Dependencies
-      run: npm install
-
-    - name: Restart PM2 Service dan Ambil Log
-      # Kita menjalankan pm2 yang sudah diinstal secara global (sekarang Path-nya sudah benar)
+    - name: Install Dependencies & Restart PM2 Service
+      # Jalankan ini dari folder bot Anda
       run: |
-        npm install -g pm2 # Memastikan PM2 ada (jika terhapus)
+        npm install -g pm2 # Pastikan PM2 ada secara global
         
-        # Pindah ke folder proyek
+        # Pindah ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # Restart bot WA Anda
-        pm2 restart bot-absen
+        # HAPUS PROSES PM2 LAMA sebelum start baru
+        # '|| true' mencegah workflow crash jika bot-absen belum ada
+        pm2 delete bot-absen || true
         
-        # Ambil log
+        # START bot WA Anda (PM2_HOME sekarang sudah diatur dan izinnya ada)
+        pm2 start index.js --name "bot-absen" --force
+        
+        pm2 save
+
+    - name: Ambil Log Verifikasi
+      # Ambil 20 baris log terakhir dan kirim ke output GitHub Actions
+      run: |
+        # Pindah ke folder proyek bot WA Anda
+        cd D:\Pengkodingan\whatsapp-bot-uqi
+        
         $LogOutput = pm2 logs bot-absen --lines 20 --nostream 2>&1
         
         Write-Host "::group::PM2 Logs (20 Lines - bot-absen)"
         Write-Host $LogOutput
         Write-Host "::endgroup::"
-        
-        pm2 save
