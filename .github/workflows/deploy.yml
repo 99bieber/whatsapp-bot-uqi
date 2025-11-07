@@ -15,10 +15,11 @@ jobs:
       uses: actions/checkout@v4
 
     # =========================================================
-    # PERBAIKAN PATH DAN IZIN PM2 KRITIS UNTUK WINDOWS NETWORK SERVICE
+    # PERBAIKAN 1: Menyiapkan Lingkungan Windows
     # =========================================================
     - name: Set Environment Path dan Home PM2
-      # Pastikan Runner tahu di mana PM2 dan Node berada, dan di mana harus menyimpan file PM2.
+      # Kita akan menjalankan semua perintah sebagai PowerShell
+      shell: powershell 
       run: |
         # Lokasi folder runner yang sebenarnya
         $RunnerFolder = "D:\Pengkodingan\actions-runner"
@@ -28,28 +29,30 @@ jobs:
         $env:PM2_HOME = "$RunnerFolder\.pm2" 
         
         # 2. Tambahkan Path NPM global (tempat PM2 diinstal secara global) ke PATH
+        # Ini penting agar Windows bisa menemukan PM2
         $npmGlobalPath = "$env:APPDATA\npm"
         $env:Path = "$npmGlobalPath;$env:Path"
         
         Write-Host "PM2_HOME set to: $env:PM2_HOME"
         Write-Host "PATH UPDATED."
 
+    # =========================================================
+    # PERBAIKAN 2: Instalasi & Restart (dengan sintaks PowerShell yang benar)
+    # =========================================================
     - name: Install Dependencies & Restart PM2 Service
-      # Jalankan ini di terminal PowerShell (di Runner)
+      shell: powershell
       run: |
         # 1. Masuk ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # 2. Instal PM2 LOKAL (bukan global) di folder proyek ini.
-        # Ini akan memastikan pm2.cmd ada di ./node_modules/.bin/pm2.cmd
+        # 2. Instal PM2 LOKAL. Ini jauh lebih andal daripada instalasi global di Runner.
         npm install pm2
         
         # 3. Definisikan alias PM2 sebagai cara tercepat. 
-        # Kita gunakan Node.js untuk menemukan path PM2 yang benar.
         $PM2 = ".\node_modules\.bin\pm2.cmd"
-
+        
         # 4. HAPUS PROSES PM2 LAMA (Menggunakan sintaks IF/ELSE Windows)
-        # Kita harus menggunakan &($PM2) untuk menjalankan file .cmd di PowerShell
+        # PowerShell mengerti if/else ini, yang menggantikan sintaks '|| true'
         if (& $PM2 delete bot-absen) { "Bot lama dihapus" } else { "Bot tidak ditemukan (normal)" }
         
         # 5. START bot WA Anda
@@ -57,16 +60,3 @@ jobs:
         
         # 6. Simpan konfigurasi
         & $PM2 save
-      shell: powershell
-
-    - name: Ambil Log Verifikasi
-      # Ambil 20 baris log terakhir dan kirim ke output GitHub Actions
-      run: |
-        # Pindah ke folder proyek bot WA Anda
-        cd D:\Pengkodingan\whatsapp-bot-uqi
-        
-        $LogOutput = pm2 logs bot-absen --lines 20 --nostream 2>&1
-        
-        Write-Host "::group::PM2 Logs (20 Lines - bot-absen)"
-        Write-Host $LogOutput
-        Write-Host "::endgroup::"
