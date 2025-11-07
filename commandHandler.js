@@ -6,13 +6,13 @@ import {
   ACTIVE_PARTIES_FILE, 
   DATA_DIR,
   SPREADSHEET_ID 
-} from './config.js' // <-- PATH DIUBAH
+} from './config.js'
 import { 
   updateAttendance, 
   sendAttendance, 
   runDailyAbsenCheck 
-} from './features/attendance.js' // <-- PATH DIUBAH
-import { updateGoogleSheet } from './features/googleSheet.js' // <-- PATH DIUBAH
+} from './features/attendance.js'
+import { updateGoogleSheet } from './features/googleSheet.js'
 
 export async function handleCommands(sock, msg, text, chatId, sender) {
   // Muat file JSON yang relevan
@@ -47,7 +47,7 @@ export async function handleCommands(sock, msg, text, chatId, sender) {
       const target = metadata.participants.find(p => p.id === newAdminJid)
       if (target) {
           targetName = target.pushName || target.name || newAdminId
-      }
+        }
     } catch (e) {
       console.log('Gagal ambil metadata grup untuk nama admin, pakai ID', e)
     }
@@ -202,7 +202,99 @@ export async function handleCommands(sock, msg, text, chatId, sender) {
     updateGoogleSheet().catch(e => console.error("[GSheet] Gagal update:", e.message));
     return;
   }
+  
+  // (kode /notifAllPlayer)
+  const notifLocalMatch = text.match(/^\/notifAllPlayer\s+(.+)/i)
+  if (notifLocalMatch) {
+    if (!chatId.endsWith('@g.us')) {
+      await sock.sendMessage(chatId, { text: '⚠️ Command ini hanya bisa digunakan di grup.' })
+      return
+    }
+    const currentParty = activeParties[chatId]
+    if (!currentParty) {
+      await sock.sendMessage(chatId, { text: '⚠️ Belum ada party yang aktif di grup ini. Jalankan `/absen party 1` dulu.' })
+      return
+    }
+    const customMessage = notifLocalMatch[1]
+    const filePath = `${DATA_DIR}/${currentParty}.json`
+    if (!fs.existsSync(filePath)) {
+      await sock.sendMessage(chatId, { text: `⚠️ Data untuk *${currentParty}* tidak ditemukan.` })
+      return
+    }
+    let data
+    try {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+    } catch (e) {
+      console.log(`[Notif Local] Gagal baca JSON: ${filePath}`, e)
+      await sock.sendMessage(chatId, { text: `⚠️ Terjadi error saat membaca data ${currentParty}.` })
+      return
+    }
+    const mentionJids = []
+    Object.entries(data).forEach(([_, info]) => {
+      if (info.status === '✅' && info.phoneNumber) {
+        mentionJids.push(`${info.phoneNumber}@s.whatsapp.net`)
+      }
+    })
+    if (mentionJids.length === 0) {
+      await sock.sendMessage(chatId, { text: `ℹ️ Tidak ada pemain yang ✅ di *${currentParty}* untuk dikirimi notif.` })
+      return
+    }
+    console.log(`[Notif Local] Mengirim notifikasi ke ${mentionJids.length} pemain di ${currentParty} (Grup Lokal)`)
+    await sock.sendMessage(chatId, {
+      text: customMessage,
+      mentions: mentionJids
+    })
+    return
+  }
 
+  // =======================================================
+  // ███ FITUR BARU: /tagReply [Pesan] (Tag semua kecuali yang di-reply) ███
+  // =======================================================
+  const tagReplyMatch = text.match(/^\/tagReply(?:\s+(.+))?$/i)
+  if (tagReplyMatch) {
+    if (!msg.key.remoteJid.endsWith('@g.us')) {
+      await sock.sendMessage(chatId, { text: '⚠️ Command ini hanya bisa digunakan di grup.' })
+      return
+    }
+
+    const quotedMessage = msg.message?.extendedTextMessage?.contextInfo
+    if (!quotedMessage || !quotedMessage.stanzaId) {
+      await sock.sendMessage(chatId, { text: '⚠️ Command ini harus di-reply ke pesan yang ingin di-tag.' })
+      return
+    }
+
+    // Ambil ID pengirim pesan yang di-reply
+    const senderOfQuotedMessage = quotedMessage.participant
+    
+    // Ambil pesan kustom, jika tidak ada, gunakan default
+    const customMessage = tagReplyMatch[1] ? tagReplyMatch[1] : "📣 TAG ALL"
+
+    const metadata = await sock.groupMetadata(chatId)
+    const participants = metadata.participants || []
+    const mentions = []
+
+    // Kumpulkan semua peserta, kecuali si pengirim pesan yang di-reply
+    participants.forEach(p => {
+        if (p.id !== senderOfQuotedMessage) {
+            mentions.push(p.id)
+        }
+    })
+
+    if (mentions.length === 0) {
+        await sock.sendMessage(chatId, { text: 'ℹ️ Tidak ada anggota grup lain untuk di-tag.' })
+        return
+    }
+
+    // Kirim pesan dengan tag
+    await sock.sendMessage(chatId, { 
+      text: customMessage, 
+      mentions: mentions 
+    })
+    console.log(`[TagReply] Tagging ${mentions.length} anggota, mengecualikan ${senderOfQuotedMessage}`)
+    
+    return
+  }
+  
   // (kode /tagabsen)
   if (text.match(/^\/tagabsen$/i)) {
     const currentParty = activeParties[chatId]
@@ -325,11 +417,11 @@ export async function handleCommands(sock, msg, text, chatId, sender) {
           console.log(`[Notif Massal] Mengirim ke ${targetChatId} (${partyName}) untuk ${mentionJids.length} pemain.`)
           await sock.sendMessage(targetChatId, {
             text: customMessage,
-            mentions: mentionJids
+            mentions: mentions
           })
           groupsNotified++
         } catch (e) {
-          console.error(`[Notif Massal] Gagal mengirim ke ${targetChatId}:`, e)
+          console.error(`Gagal mengirim ke ${targetChatId}:`, e)
         }
       } else {
         console.log(`[Notif Massal] Skipping ${targetChatId} (${partyName}): Tidak ada pemain '✅'.`)
