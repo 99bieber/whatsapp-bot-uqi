@@ -1,28 +1,74 @@
-# deploy.yml
 name: Auto Deploy & Restart Bot
 
 on:
   push:
     branches:
-      - main # Hanya jalankan ketika ada push ke branch 'main'
+      - main
 
 jobs:
   deploy:
     runs-on: self-hosted
-    
+
     steps:
-    - name: Checkout Kode Bersih
+    # 1. Ambil kode dari repository
+    - name: Checkout Kode
       uses: actions/checkout@v4
 
+    # 2. Pindah ke folder proyek dan install dependencies
     - name: Install Dependencies
-      run: npm install
-
-    - name: Install Dependencies & Restart PM2 Service
+      shell: pwsh
       run: |
-        # 1. Masuk ke folder proyek bot WA Anda
+        Write-Host "📁 Masuk ke folder proyek"
         cd D:\Pengkodingan\whatsapp-bot-uqi
-        
-        pm2 restart bot-absen
-        
-        # 6. Simpan konfigurasi
-        & pm2 save
+
+        Write-Host "📦 Install dependencies..."
+        npm install
+
+    # 3. Pastikan PM2 terinstal (atau install jika belum ada)
+    - name: Pastikan PM2 Terinstal
+      shell: pwsh
+      run: |
+        Write-Host "🔍 Mengecek apakah PM2 sudah terinstal..."
+        if (-not (Get-Command pm2 -ErrorAction SilentlyContinue)) {
+          Write-Host "⚙️ PM2 belum terinstal, menginstal global..."
+          npm install -g pm2
+        } else {
+          Write-Host "✅ PM2 sudah terinstal"
+        }
+
+        Write-Host "📂 Menambahkan PM2 ke PATH..."
+        $env:PATH += ";C:\Users\runneradmin\AppData\Roaming\npm"
+        pm2 -v
+
+    # 4. Restart atau jalankan bot via PM2
+    - name: Restart Bot via PM2
+      shell: pwsh
+      run: |
+        Write-Host "🚀 Menjalankan atau me-restart bot..."
+        cd D:\Pengkodingan\whatsapp-bot-uqi
+
+        # Pastikan PM2 dikenali di PATH
+        $env:PATH += ";C:\Users\runneradmin\AppData\Roaming\npm"
+
+        try {
+          pm2 describe bot-absen > $null 2>&1
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "🔄 Bot ditemukan, me-restart..."
+            pm2 restart bot-absen
+          } else {
+            Write-Host "🆕 Bot belum berjalan, menjalankan baru..."
+            pm2 start index.js --name "bot-absen"
+          }
+        } catch {
+          Write-Host "⚠️ Error mendeteksi bot, menjalankan baru..."
+          pm2 start index.js --name "bot-absen"
+        }
+
+        pm2 save
+
+    # 5. Verifikasi status PM2
+    - name: Cek Status PM2
+      shell: pwsh
+      run: |
+        $env:PATH += ";C:\Users\runneradmin\AppData\Roaming\npm"
+        pm2 list
