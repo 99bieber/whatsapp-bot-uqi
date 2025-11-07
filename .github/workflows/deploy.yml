@@ -14,13 +14,8 @@ jobs:
     - name: Checkout Kode Bersih
       uses: actions/checkout@v4
 
-    - name: Set Environment Path (Minimalis)
-      shell: powershell 
-      run: |
-        # Tambahkan Path NPM global ke PATH (agar npm ditemukan oleh Runner)
-        $npmGlobalPath = "$env:APPDATA\npm"
-        $env:Path = "$npmGlobalPath;$env:Path"
-        Write-Host "PATH UPDATED."
+    - name: Install Dependencies
+      run: npm install
 
     - name: Install Dependencies & Restart PM2 Service
       shell: powershell
@@ -28,11 +23,6 @@ jobs:
         # 1. Masuk ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # 2. Instal semua dependensi proyek (termasuk PM2 lokal untuk keandalan)
-        npm install
-        
-        # 3. Definisikan alias PM2 dari instalasi lokal
-        $PM2 = ".\node_modules\.bin\pm2.cmd"
         pm2 restart bot-absen
         
         # 6. Simpan konfigurasi
