@@ -1,0 +1,48 @@
+# deploy.yml
+name: Auto Deploy & Restart Bot
+
+on:
+  push:
+    branches:
+      - main # Hanya jalankan ketika ada push ke branch 'main'
+
+jobs:
+  deploy:
+    # Set runner untuk dijalankan di laptop Windows Anda
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout Kode Bersih
+      uses: actions/checkout@v4
+      # Kode akan ditarik ke direktori kerja runner.
+
+    - name: Set Lokasi Node.js (PENTING untuk Windows)
+      # Memastikan runner tahu lokasi Node.js (sejak Anda menginstal Node.js terbaru).
+      run: |
+        $nodePath = "C:\Program Files\nodejs"
+        $env:Path = "$nodePath;$env:Path"
+        node -v
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Restart PM2 Service dan Ambil Log
+      # Kita menjalankan pm2 yang sudah diinstal secara global.
+      run: |
+        npm install -g pm2 # Pastikan pm2 ada secara global
+        
+        # Pindah ke folder proyek agar PM2 tahu mana file index.js yang harus di-restart
+        # Catatan: Ubah path ini jika folder bot Anda BUKAN di D:\Pengkodingan\whatsapp-bot-uqi
+        cd D:\Pengkodingan\whatsapp-bot-uqi
+        
+        # Restart bot WA Anda
+        pm2 restart bot-absen
+        
+        # Ambil 20 baris log terakhir dan kirim ke output GitHub Actions
+        $LogOutput = pm2 logs bot-absen --lines 20 --nostream 2>&1
+        
+        Write-Host "::group::PM2 Logs (20 Lines - bot-absen)"
+        Write-Host $LogOutput
+        Write-Host "::endgroup::"
+        
+        pm2 save
