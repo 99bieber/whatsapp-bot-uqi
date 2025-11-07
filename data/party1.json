@@ -1,0 +1,38 @@
+{
+  "G2CZgrsNVDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6281945920003"
+  },
+  "G2CsLmttNVDPRTY": {
+    "status": "❌",
+    "alasan": "Tidak Ada Kabar",
+    "tipe": "main",
+    "phoneNumber": "6285295487192"
+  },
+  "G2CYumi79DPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6282240323163"
+  },
+  "G2CngeottDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6282249041849"
+  },
+  "G2CpapaNVDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "subs",
+    "phoneNumber": "6285210713314"
+  },
+  "G2CChanDPRTY": {
+    "status": "❌",
+    "alasan": "Ada acara",
+    "tipe": "exsubs",
+    "phoneNumber": "62895622994163"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "G2CRdynNVDPRTY": {
+    "status": "❌",
+    "alasan": "sakit",
+    "tipe": "main",
+    "phoneNumber": "6285349461531"
+  },
+  "G2Cyuky79DPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6281775009857"
+  },
+  "G2CMayyDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6285720156551"
+  },
+  "G2CdannzDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6285817597332"
+  },
+  "G2CBiN79DPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "subs",
+    "phoneNumber": "6281977064122"
+  },
+  "G2CDedepDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "exsubs",
+    "phoneNumber": "6283895648571"
+  },
+  "G2CyogaDPRTY": {
+    "status": "❌",
+    "alasan": "Tidak Ada Kabar",
+    "tipe": "exsubs",
+    "phoneNumber": "6285797494160"
+  }
+}

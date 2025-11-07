@@ -1,0 +1,33 @@
+# -----------------
+# SUPER RAHASIA
+# -----------------
+
+# 1. Kunci Rahasia "Brankas" (.env)
+# Mengamankan DISCORD_TOKEN Anda.
+.env
+
+# 2. Kunci Google API (credentials.json)
+# Mengamankan koneksi ke Google Sheets Anda.
+/credentials.json
+
+# 3. Sesi WhatsApp (/auth)
+# Mengamankan login WhatsApp Anda. Jika ini bocor,
+# orang lain bisa membajak nomor WA bot Anda.
+/auth
+
+# -----------------
+# FILE SAMPAH
+# -----------------
+
+# 4. Folder Instalasi (node_modules)
+# Folder ini ukurannya raksasa dan bisa di-instal ulang
+# oleh siapa saja dengan 'npm install'.
+/node_modules
+
+# 5. File Log
+# Berisi log error dan info yang tidak perlu di-backup.
+*.log
+
+# 6. File Sistem Operasi
+# File sampah dari macOS (.DS_Store) atau OS lain.
+.DS_Store

@@ -1,0 +1,50 @@
+{
+  "G2CPrimsDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6285156198476"
+  },
+  "G2CIsal79DPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6289603095051"
+  },
+  "G2CMaelX7DPRTY": {
+    "status": "❌",
+    "alasan": "perjalanan keluar kota",
+    "tipe": "main",
+    "phoneNumber": "6289690695840"
+  },
+  "G2CBotsNVDPRTY": {
+    "status": "❌",
+    "alasan": "akun kena ban",
+    "tipe": "main",
+    "phoneNumber": "6285817597332"
+  },
+  "G2CGenDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "exsubs",
+    "phoneNumber": "6282130242829"
+  },
+  "G2CFall24DPRTY": {
+    "status": "❌",
+    "alasan": "Budhe Meninggal",
+    "tipe": "exsubs",
+    "phoneNumber": "62895341089285"
+  },
+  "G2CKing79DPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "exsubs",
+    "phoneNumber": "6289654373850"
+  },
+  "G2CYuaaB3DPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "exsubs",
+    "phoneNumber": "6285157941002"
+  }
+}

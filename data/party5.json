@@ -1,0 +1,38 @@
+{
+  "G2CTheoNVDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6289657390828"
+  },
+  "G2CSnjuNVDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6287766871950"
+  },
+  "G2CLymNVDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "main",
+    "phoneNumber": "6282261050014"
+  },
+  "G2CFebzNVDPRTY": {
+    "status": "❌",
+    "alasan": "Mau Jemput adik di stasiun cirebon jam 9 malam",
+    "tipe": "main",
+    "phoneNumber": "6281918332016"
+  },
+  "G2CMeddNVDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "subs",
+    "phoneNumber": "6287760977399"
+  },
+  "G2CZioNVDPRTY": {
+    "status": "✅",
+    "alasan": "",
+    "tipe": "exsubs",
+    "phoneNumber": "6287760977399"
+  }
+}
