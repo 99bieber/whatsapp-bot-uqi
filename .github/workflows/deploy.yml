@@ -44,8 +44,10 @@ jobs:
         echo 💾 Menyimpan konfigurasi PM2...
         "%PM2_PATH%" save
 
-    - name: Cek Status PM2
+    - name: Restart PM2
       shell: cmd
       run: |
-        set PM2_PATH=C:\Users\Administrator\AppData\Roaming\npm\pm2.cmd
-        "%PM2_PATH%" list
+        cd /d D:\Pengkodingan\whatsapp-bot-uqi
+        "C:\Users\Administrator\AppData\Roaming\npm\pm2.cmd" restart bot-absen || ^
+        "C:\Users\Administrator\AppData\Roaming\npm\pm2.cmd" start index.js --name bot-absen
+
