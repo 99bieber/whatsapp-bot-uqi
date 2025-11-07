@@ -18,37 +18,34 @@ jobs:
       run: |
         echo 📁 Masuk ke folder proyek
         cd /d D:\Pengkodingan\whatsapp-bot-uqi
-        echo 📦 Install dependencies...
         npm install
 
-    - name: Install PM2 dan Jalankan Bot
+    - name: Jalankan PM2 Restart
       shell: cmd
       run: |
         cd /d D:\Pengkodingan\whatsapp-bot-uqi
 
-        echo 🔍 Mengecek apakah PM2 sudah terinstal...
-        where pm2 || npm install -g pm2
+        rem Path absolut ke PM2
+        set PM2_PATH=C:\Users\Administrator\AppData\Roaming\npm\pm2.cmd
 
-        REM Pastikan PATH npm global user Administrator aktif di session ini
-        set PATH=%PATH%;C:\Users\Administrator\AppData\Roaming\npm
-
-        echo ✅ Cek versi PM2...
-        pm2 -v
+        echo ✅ Mengecek versi PM2...
+        "%PM2_PATH%" -v
 
         echo 🚀 Menjalankan atau me-restart bot...
-        pm2 describe bot-absen >nul 2>&1
+        "%PM2_PATH%" describe bot-absen >nul 2>&1
         if %errorlevel%==0 (
           echo 🔄 Bot ditemukan, me-restart...
-          pm2 restart bot-absen
+          "%PM2_PATH%" restart bot-absen
         ) else (
           echo 🆕 Bot belum berjalan, menjalankan baru...
-          pm2 start index.js --name "bot-absen"
+          "%PM2_PATH%" start index.js --name "bot-absen"
         )
 
-        pm2 save
+        echo 💾 Menyimpan konfigurasi PM2...
+        "%PM2_PATH%" save
 
     - name: Cek Status PM2
       shell: cmd
       run: |
-        set PATH=%PATH%;C:\Users\Administrator\AppData\Roaming\npm
-        pm2 list
+        set PM2_PATH=C:\Users\Administrator\AppData\Roaming\npm\pm2.cmd
+        "%PM2_PATH%" list
