@@ -10,41 +10,30 @@ jobs:
     runs-on: self-hosted
 
     steps:
-    # 1️⃣ Ambil kode dari repository
     - name: Checkout Kode
       uses: actions/checkout@v4
 
-    # 2️⃣ Masuk ke folder proyek dan install dependencies
     - name: Install Dependencies
       shell: cmd
       run: |
         echo 📁 Masuk ke folder proyek
         cd /d D:\Pengkodingan\whatsapp-bot-uqi
-
         echo 📦 Install dependencies...
         npm install
 
-    # 3️⃣ Pastikan PM2 Terinstal (install jika belum ada)
-    - name: Pastikan PM2 Terinstal
-      shell: cmd
-      run: |
-        echo 🔍 Mengecek apakah PM2 sudah terinstal...
-        where pm2 || npm install -g pm2
-
-        REM Tambahkan PATH npm global (user Administrator)
-        setx PATH "%PATH%;C:\Users\Administrator\AppData\Roaming\npm"
-
-        echo ✅ Cek versi PM2
-        pm2 -v
-
-    # 4️⃣ Restart atau jalankan bot dengan PM2
-    - name: Restart Bot via PM2
+    - name: Install PM2 dan Jalankan Bot
       shell: cmd
       run: |
         cd /d D:\Pengkodingan\whatsapp-bot-uqi
 
-        REM Pastikan PM2 ada di PATH
+        echo 🔍 Mengecek apakah PM2 sudah terinstal...
+        where pm2 || npm install -g pm2
+
+        REM Pastikan PATH npm global user Administrator aktif di session ini
         set PATH=%PATH%;C:\Users\Administrator\AppData\Roaming\npm
+
+        echo ✅ Cek versi PM2...
+        pm2 -v
 
         echo 🚀 Menjalankan atau me-restart bot...
         pm2 describe bot-absen >nul 2>&1
@@ -58,7 +47,6 @@ jobs:
 
         pm2 save
 
-    # 5️⃣ Cek status semua proses PM2
     - name: Cek Status PM2
       shell: cmd
       run: |
