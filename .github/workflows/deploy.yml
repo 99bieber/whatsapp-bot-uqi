@@ -9,54 +9,41 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-
+    
+    # =========================================================
+    # PERBAIKAN PATH DAN IZIN PM2 KRITIS UNTUK WINDOWS NETWORK SERVICE
+    # =========================================================
+    env:
+        # PM2_HOME harus diatur ke lokasi yang 100% bisa diakses oleh Network Service
+        # Kita gunakan folder runner itu sendiri.
+        PM2_HOME: D:\Pengkodingan\actions-runner\.pm2 
+        
     steps:
     - name: Checkout Kode Bersih
       uses: actions/checkout@v4
 
-    # =========================================================
-    # PERBAIKAN 1: Menyiapkan Lingkungan Windows
-    # =========================================================
-    - name: Set Environment Path dan Home PM2
-      # Kita akan menjalankan semua perintah sebagai PowerShell
-      shell: powershell 
+    - name: Install Dependencies & Restart PM2 Service
+      # Kita menjalankan semua perintah sebagai PowerShell
+      shell: powershell
       run: |
-        # Lokasi folder runner yang sebenarnya
-        $RunnerFolder = "D:\Pengkodingan\actions-runner"
-        
-        # 1. Tentukan folder home PM2 berada di dalam folder runner (.pm2)
-        # Ini memberikan izin baca/tulis yang diperlukan oleh NETWORK SERVICE
-        $env:PM2_HOME = "$RunnerFolder\.pm2" 
-        
-        # 2. Tambahkan Path NPM global (tempat PM2 diinstal secara global) ke PATH
-        # Ini penting agar Windows bisa menemukan PM2
+        # 1. Tambahkan Path NPM global ke PATH (agar Node.js/npm ditemukan)
         $npmGlobalPath = "$env:APPDATA\npm"
         $env:Path = "$npmGlobalPath;$env:Path"
         
-        Write-Host "PM2_HOME set to: $env:PM2_HOME"
-        Write-Host "PATH UPDATED."
-
-    # =========================================================
-    # PERBAIKAN 2: Instalasi & Restart (dengan sintaks PowerShell yang benar)
-    # =========================================================
-    - name: Install Dependencies & Restart PM2 Service
-      shell: powershell
-      run: |
-        # 1. Masuk ke folder proyek bot WA Anda
+        # 2. Masuk ke folder proyek bot WA Anda
         cd D:\Pengkodingan\whatsapp-bot-uqi
         
-        # 2. Instal PM2 LOKAL. Ini jauh lebih andal daripada instalasi global di Runner.
+        # 3. Instal PM2 LOKAL. Ini andalan kita.
         npm install pm2
         
-        # 3. Definisikan alias PM2 sebagai cara tercepat. 
+        # 4. Definisikan alias PM2 dari instalasi lokal
         $PM2 = ".\node_modules\.bin\pm2.cmd"
         
-        # 4. HAPUS PROSES PM2 LAMA (Menggunakan sintaks IF/ELSE Windows)
-        # PowerShell mengerti if/else ini, yang menggantikan sintaks '|| true'
+        # 5. HAPUS PROSES PM2 LAMA (Menggunakan sintaks IF/ELSE Windows)
         if (& $PM2 delete bot-absen) { "Bot lama dihapus" } else { "Bot tidak ditemukan (normal)" }
         
-        # 5. START bot WA Anda
+        # 6. START bot WA Anda
         & $PM2 start index.js --name "bot-absen" --force
         
-        # 6. Simpan konfigurasi
+        # 7. Simpan konfigurasi
         & $PM2 save
